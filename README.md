@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RCMS Frontend
 
-## Getting Started
+Frontend del sistema de gestion de torneos de robotica universitarios.
 
-First, run the development server:
+Stack actual:
+- Next.js 16 (App Router + middleware)
+- TypeScript
+- Tailwind CSS + shadcn/ui
+- Integracion con API RCMS documentada en `docs/api.md`
+
+## Setup local
+
+1. Instala dependencias:
+
+```bash
+npm install
+```
+
+2. Crea archivo de entorno:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Levanta el servidor:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Abre:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`http://localhost:3000`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variables de entorno
 
-## Learn More
+- `NEXT_PUBLIC_API_BASE_URL`: URL base del backend (default: `http://localhost:8080/api`)
+- `NEXT_PUBLIC_AUTH_COOKIE_NAME`: cookie de sesion (default: `rcms_token`)
 
-To learn more about Next.js, take a look at the following resources:
+## Rutas implementadas (iteracion 1)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Publicas:
+- `/`
+- `/contests/[id]`
+- `/auth/login`
+- `/auth/student/callback`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Administrador:
+- `/admin/dashboard`
+- `/admin/contests`
 
-## Deploy on Vercel
+Estudiante:
+- `/student/dashboard`
+- `/student/history`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Proxy auth en Next:
+- `/api/auth/login`
+- `/api/auth/google/exchange`
+- `/api/auth/logout`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notas importantes
+
+- El bootstrap del primer ADMIN es fuera del frontend (segun definicion de alcance).
+- El callback de estudiante intercambia `id_token` por sesion RCMS usando el endpoint `/auth/google` del backend.
+- El middleware usa cookie de sesion + cookie de rol para proteger rutas por perfil.
+
+## Documentacion
+
+- API principal: `docs/api.md`
+- Especificacion funcional: PDF en `docs/`
