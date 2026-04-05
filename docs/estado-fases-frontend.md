@@ -1,9 +1,9 @@
 # RCMS Frontend - Estado por fases y plan de continuidad
 
-Fecha de actualizacion: 2026-04-01
+Fecha de actualizacion: 2026-04-04
 
 ## 1. Contexto del proyecto
-Este frontend implementa el Sistema de Gestion de Torneos de Robotica Universitarios sobre el backend RCMS documentado en docs/api.md.
+Este frontend implementa el Sistema de Gestion de Torneos de Robotica Universitarios sobre el backend RCMS documentado en `docs/api.md`.
 
 Objetivo del frontend:
 - Portal publico para ver concursos, modalidades y resultados.
@@ -15,25 +15,26 @@ Objetivo del frontend:
 - TypeScript.
 - Tailwind CSS.
 - shadcn/ui (base-ui flavor).
-- Middleware para control de acceso.
-- Endpoints internos de Next para proxy seguro de autenticacion y operaciones admin.
+- Middleware y validacion de sesion por rol.
+- Endpoints internos de Next para proxy de auth y operaciones por dominio.
 
 ## 3. Resumen ejecutivo de avance
-Estado general: Base funcional estable, con flujo ADMIN principal en progreso avanzado.
+Estado general: MVP funcional en progreso, con base estable y flujo ADMIN + STUDENT ya operativos en gran parte.
 
 Completado en alto nivel:
-- Infraestructura del proyecto y UI base.
-- Middleware y guardas de sesion reforzadas.
-- Modulo ADMIN de concursos y modalidades (crear, editar, eliminar, listar).
-- Correcciones de cache y refresco de datos sin hard reload.
-- Correcciones de logout para evitar reingreso por historial del navegador.
+- Infraestructura base del proyecto.
+- Auth shell con cookies propias del frontend.
+- Guardas de sesion reforzadas (middleware + validacion server/client).
+- Modulo ADMIN de concursos y modalidades (MVP).
+- Modulo STUDENT de equipos e historial (MVP).
+- Correcciones de cache para refresco inmediato en paneles.
+- Fallback de login dev para estudiantes fake (`fake-google-id-N`).
 
 Pendiente en alto nivel:
-- Flujo OAuth estudiante de punta a punta (UI completa con proveedor).
-- Modulo STUDENT completo (crear equipo, validaciones de negocio, historial final).
+- OAuth Google real end-to-end (sin fallback dev).
 - Modulo WINNERS ADMIN completo.
-- Integracion completa de certificados y reportes.
-- Endurecimiento final (tests, observabilidad y checklist de produccion).
+- Pulido de certificados y mensajes de error UX.
+- Hardening final (tests, checklist deploy, accesibilidad).
 
 ---
 
@@ -42,37 +43,36 @@ Pendiente en alto nivel:
 ## Fase 0 - Fundacion tecnica
 Estado: COMPLETADA
 
-Alcance:
-- Inicializacion del proyecto Next.js con TypeScript y App Router.
-- Integracion de Tailwind y shadcn/ui.
-- Estructura base de carpetas para escalado por features.
-- Configuracion de scripts de desarrollo para LAN.
+Alcance ejecutado:
+- Inicializacion Next.js + TypeScript + App Router.
+- Integracion Tailwind + shadcn/ui.
+- Estructura de carpetas por dominios funcionales.
+- Scripts de desarrollo para LAN.
 
 Resultado:
-- Proyecto compilable, con lint y build en verde.
-- Base lista para iteraciones por dominio funcional.
+- Proyecto compilable y extensible.
 
 ---
 
 ## Fase 1 - Auth shell y control de acceso
-Estado: MAYORMENTE COMPLETADA
+Estado: COMPLETADA EN MVP
 
 Alcance ejecutado:
-- Login ADMIN mediante endpoint interno en Next.
-- Callback STUDENT para intercambio de id_token.
-- Logout via endpoint interno.
-- Middleware por rutas ADMIN/STUDENT.
-- Guard adicional en cliente para sesiones invalidas.
-- Validacion activa de sesion mediante /auth/me en rutas protegidas.
+- Login ADMIN via endpoint interno.
+- Callback STUDENT para exchange de token.
+- Logout con limpieza de cookies de sesion y rol.
+- `/api/auth/me` para validacion de sesion.
+- Middleware por rol + layouts protegidos server-side.
+- Guardas cliente para expulsar en 401/403 durante mutaciones.
 
-Correcciones relevantes ya aplicadas:
-- Manejo de cookies para host frontend (evita inconsistencias localhost/IP).
-- Expulsion a inicio cuando la sesion no es valida.
-- Bloqueo de acceso por historial del navegador tras logout.
+Correcciones relevantes aplicadas:
+- Manejo de cookie host-safe en frontend.
+- Expulsion a `/` con sesion invalida.
+- Bloqueo de reingreso por historial del navegador tras logout.
+- Fallback dev para login estudiante con `fake-google-id-N`.
 
-Pendiente de esta fase:
-- Integracion OAuth completa con proveedor Google (flujo UX final, no solo callback tecnico).
-- Mensajes de sesion expirada mas amigables en UI.
+Pendiente de fase:
+- OAuth Google real con UX final.
 
 ---
 
@@ -80,21 +80,21 @@ Pendiente de esta fase:
 Estado: COMPLETADA EN MVP
 
 Alcance ejecutado:
-- Listado de concursos para ADMIN.
+- Listado de concursos.
 - Crear concurso.
-- Editar concurso (incluye cambio de estado OPEN/CLOSED).
+- Editar concurso (incluye OPEN/CLOSED).
 - Eliminar concurso.
-- Detalle de concurso en panel ADMIN.
-- Crear modalidad dentro de concurso.
-- Listar modalidades del concurso en tiempo real al refrescar ruta.
+- Detalle de concurso.
+- Crear modalidad en concurso.
+- Refresco inmediato de modalidades sin hard reload.
 
-Detalles tecnicos importantes:
-- Mutaciones ADMIN se ejecutan contra endpoints internos en Next (proxy), no directo desde browser al backend.
-- Ajustes de cache para evitar stale data: en area ADMIN se prioriza no-store donde aplica.
+Detalles tecnicos:
+- Mutaciones por endpoints internos en Next.
+- Lecturas admin criticas con `no-store` para evitar stale data.
 
-Pendiente de esta fase:
-- Edicion y eliminacion de modalidades en UI.
-- Paginacion/filtros si el volumen de concursos crece.
+Pendiente de fase:
+- Editar/eliminar modalidad en UI.
+- Filtros/paginacion opcionales.
 
 ---
 
@@ -102,56 +102,63 @@ Pendiente de esta fase:
 Estado: PARCIALMENTE COMPLETADA
 
 Alcance ejecutado:
-- Home publica con listado de concursos.
+- Home publica con concursos.
 - Detalle publico de concurso.
-- Visualizacion basica de modalidades y podio cuando existe data.
+- Vista basica de modalidades y podio.
 
 Pendiente:
-- Pulido UX final del portal publico.
-- Manejo de estados vacios/errores mas rico.
-- Estrategia de revalidacion por tags para cache publico inteligente.
+- Pulido UX y estados vacios/errores.
+- Estrategia de revalidacion por tags para cache publico.
 
 ---
 
 ## Fase 4 - Modulo STUDENT
-Estado: INICIADA, NO COMPLETA
+Estado: COMPLETADA EN MVP
 
-Ya existe:
-- Estructura de rutas STUDENT.
-- Dashboard base.
-- Historial base conectado.
-
-Pendiente critico:
-- Crear equipo completo segun reglas de negocio del backend:
+Alcance ejecutado:
+- Dashboard estudiante funcional.
+- Crear equipo con validaciones base del lado frontend:
+  - Concurso OPEN.
+  - Solicitante incluido automaticamente.
   - Maximo 2 miembros.
-  - El solicitante debe incluirse en memberUserIds.
-  - Solo concursos OPEN.
-- Gestion de equipos propios en UI (con estados y errores claros).
-- Flujo de certificados desde historial (descarga y feedback de errores).
+- Listado de mis equipos.
+- Historial del estudiante.
+- Descarga de certificado via endpoint interno.
+
+Correcciones relevantes aplicadas:
+- Endpoint interno de teams robusto ante backend con `404` en `/teams/my`.
+- Resolucion de nombre de modalidad en tabla de equipos (no UUID crudo).
+
+Pendiente de fase:
+- Mejor UX para seleccionar companero (actualmente por ID).
+- Mensajes de error mas guiados por reglas de negocio.
 
 ---
 
-## Fase 5 - Modulo ADMIN Winners y operacion final
+## Fase 5 - Modulo ADMIN Winners
 Estado: PENDIENTE
 
 Pendiente:
 - Asignar ganador por modalidad y posicion.
 - Editar posicion de ganador.
 - Eliminar ganador.
-- Reflejar reglas del backend en UI:
-  - Solo una posicion FIRST/SECOND/THIRD por modalidad.
+- Validaciones de UI segun reglas backend:
+  - Una posicion unica por modalidad.
   - Maximo 3 ganadores por modalidad.
-  - Validaciones de consistencia team-modality.
+  - Team debe corresponder a modalidad.
 
 ---
 
 ## Fase 6 - Certificados y trazabilidad
-Estado: PENDIENTE
+Estado: EN PROGRESO PARCIAL
+
+Ya existe:
+- Descarga de certificado estudiante via endpoint interno.
 
 Pendiente:
-- Integracion fina de descarga de certificados en flujo STUDENT y ADMIN.
-- Manejo de errores de autorizacion al descargar PDF.
-- Mejorar experiencia de historial con estado de certificado disponible/no disponible.
+- Refinar UX de errores de descarga (401/403).
+- Flujo ADMIN de certificados.
+- Mejor feedback en historial.
 
 ---
 
@@ -159,12 +166,10 @@ Pendiente:
 Estado: PENDIENTE
 
 Pendiente:
-- Pruebas de rutas criticas de auth y permisos.
-- Pruebas de regresion de mutaciones admin.
-- Verificacion E2E de flujos reales por rol.
+- Pruebas de auth/roles y regresion de mutaciones.
+- Verificacion E2E por rol.
 - Revisión de accesibilidad y consistencia visual.
-- Checklist de variables de entorno por ambiente.
-- Documentacion de despliegue y operacion.
+- Checklist de variables por ambiente y despliegue.
 
 ---
 
@@ -172,63 +177,63 @@ Pendiente:
 
 Auth:
 - ADMIN login: Implementado.
-- STUDENT login Google: Parcial (callback tecnico), falta UX OAuth completa.
+- STUDENT login: Implementado en modo callback + fallback dev.
 - Logout: Implementado y reforzado.
-- Me/session check: Implementado.
+- Session check (`/auth/me`): Implementado.
+- OAuth Google real: Pendiente.
 
 Contests:
 - Public list/detail: Implementado.
 - ADMIN create/update/delete: Implementado.
 
 Modalities:
-- List by contest: Implementado.
+- Public/by contest: Implementado.
 - ADMIN create: Implementado.
-- ADMIN update/delete: Pendiente de UI.
+- ADMIN update/delete: Pendiente UI.
 
 Teams:
-- Public/team list y STUDENT create con reglas: Pendiente principal.
+- STUDENT create team: Implementado en MVP.
+- STUDENT list my teams: Implementado en MVP.
 
 Winners:
 - Lectura publica basica: Parcial.
 - CRUD admin winners: Pendiente.
 
 History:
-- Vista base: Implementada.
-- Flujo completo y refinado: Pendiente.
+- STUDENT history: Implementado en MVP.
 
 Certificates:
-- Integracion operativa completa: Pendiente.
+- Descarga estudiante: Implementada en MVP.
+- Flujo completo ADMIN/STUDENT refinado: Pendiente.
 
 ---
 
 ## 6. Riesgos actuales y mitigaciones
 
 Riesgo: sesion invalida persistida en cliente.
-Mitigacion aplicada: middleware con validacion de sesion real + guard cliente + redireccion forzada.
+Mitigacion aplicada: middleware + guard server-side + guard client-side + redireccion forzada.
 
-Riesgo: datos viejos en panel admin por cache.
-Mitigacion aplicada: consultas admin criticas con no-store.
+Riesgo: datos viejos en panel admin.
+Mitigacion aplicada: `no-store` en lecturas criticas.
 
-Riesgo: discrepancias de dominio/host para cookies en desarrollo LAN.
-Mitigacion aplicada: ajustes de script dev y origen permitido en Next.
+Riesgo: diferencias de host/cookie en desarrollo.
+Mitigacion aplicada: scripts de dev LAN + manejo de cookies del lado Next.
+
+Riesgo: comportamiento inconsistente de `/teams/my` en algunos estados backend.
+Mitigacion aplicada: fallback con `/auth/me` + `/teams` y filtro por miembro.
 
 ---
 
-## 7. Backlog recomendado para la siguiente jornada
+## 7. Siguiente fase recomendada (sin abrir frentes nuevos)
 
-Prioridad alta:
-1. Completar modulo STUDENT de equipos con reglas de negocio.
-2. Completar modulo ADMIN de winners.
-3. Cerrar OAuth Google end-to-end en UI.
+Prioridad inmediata:
+1. Completar Fase 5 (Winners ADMIN) de punta a punta.
+2. Cerrar pendientes menores de Fase 2/Fase 4 (editar/eliminar modalidad, UX de companero).
+3. Refinar Fase 6 (errores certificados + flujo ADMIN).
 
-Prioridad media:
-1. Editar/eliminar modalidades en panel ADMIN.
-2. Mejorar UX de errores y estados de carga.
-3. Revalidacion por tags para area publica.
-
-Prioridad baja:
-1. Pulido visual final y microinteracciones.
-2. Reportes adicionales para ADMIN.
+Prioridad posterior:
+1. OAuth Google real en reemplazo de fallback dev.
+2. Hardening final (tests y checklist de entrega).
 
 ---
 
@@ -236,5 +241,5 @@ Prioridad baja:
 El MVP se considera terminado cuando:
 - ADMIN puede gestionar concursos, modalidades y winners de inicio a fin.
 - STUDENT puede autenticarse, crear equipo valido, ver historial y descargar certificado cuando aplique.
-- Usuario sin sesion no puede permanecer en rutas protegidas ni por historial del navegador.
-- Flujos criticos pasan validacion manual y build/lint en verde.
+- Usuario sin sesion no puede permanecer en rutas protegidas ni por historial.
+- Flujos criticos pasan validacion manual y `lint/build` en verde.
