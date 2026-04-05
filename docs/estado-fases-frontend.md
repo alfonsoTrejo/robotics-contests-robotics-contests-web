@@ -88,6 +88,8 @@ Alcance ejecutado:
 - Eliminar concurso.
 - Detalle de concurso.
 - Crear modalidad en concurso.
+- Editar modalidad en concurso.
+- Eliminar modalidad en concurso.
 - Refresco inmediato de modalidades sin hard reload.
 
 Detalles tecnicos:
@@ -96,7 +98,6 @@ Detalles tecnicos:
 - Helpers compartidos de lecturas con `no-store` por defecto para reducir dependencia de hard refresh.
 
 Pendiente de fase:
-- Editar/eliminar modalidad en UI.
 - Filtros/paginacion opcionales.
 
 ---

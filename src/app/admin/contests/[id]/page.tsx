@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 
 import { ContestEditForm } from "@/components/features/contests/contest-edit-form";
 import { ModalityCreateForm } from "@/components/features/modalities/modality-create-form";
+import { ModalityListManager } from "@/components/features/modalities/modality-list-manager";
 import { SiteHeader } from "@/components/layout/site-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getContestById } from "@/lib/api/contests";
 import { listModalitiesByContest } from "@/lib/api/modalities";
 
@@ -39,21 +39,7 @@ export default async function AdminContestDetailPage({
 
         <section className="grid gap-4 md:grid-cols-2">
           <ModalityCreateForm contestId={contest.id} />
-
-          <Card className="border-black/10 shadow-none">
-            <CardHeader>
-              <CardTitle>Modalidades del concurso</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-neutral-700">
-              {modalities.length === 0 && <p>No hay modalidades registradas aun.</p>}
-              {modalities.map((modality) => (
-                <div key={modality.id} className="rounded-md border border-black/10 px-3 py-2">
-                  <p className="font-medium">{modality.name}</p>
-                  <p>{modality.description}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <ModalityListManager contestId={contest.id} initialModalities={modalities} />
         </section>
       </main>
     </div>
