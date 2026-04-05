@@ -1,6 +1,6 @@
 # RCMS Frontend - Estado por fases y plan de continuidad
 
-Fecha de actualizacion: 2026-04-04
+Fecha de actualizacion: 2026-04-05
 
 ## 1. Contexto del proyecto
 Este frontend implementa el Sistema de Gestion de Torneos de Robotica Universitarios sobre el backend RCMS documentado en `docs/api.md`.
@@ -27,7 +27,9 @@ Completado en alto nivel:
 - Guardas de sesion reforzadas (middleware + validacion server/client).
 - Modulo ADMIN de concursos y modalidades (MVP).
 - Modulo STUDENT de equipos e historial (MVP).
-- Correcciones de cache para refresco inmediato en paneles.
+- Correcciones de cache para refresco inmediato en paneles y vistas publicas.
+- Lecturas compartidas criticas con `no-store` por defecto para evitar hard refresh.
+- Modulo ADMIN de Winners implementado.
 - Fallback de login dev para estudiantes fake (`fake-google-id-N`).
 
 Pendiente en alto nivel:
@@ -91,6 +93,7 @@ Alcance ejecutado:
 Detalles tecnicos:
 - Mutaciones por endpoints internos en Next.
 - Lecturas admin criticas con `no-store` para evitar stale data.
+- Helpers compartidos de lecturas con `no-store` por defecto para reducir dependencia de hard refresh.
 
 Pendiente de fase:
 - Editar/eliminar modalidad en UI.
@@ -104,11 +107,12 @@ Estado: PARCIALMENTE COMPLETADA
 Alcance ejecutado:
 - Home publica con concursos.
 - Detalle publico de concurso.
-- Vista basica de modalidades y podio.
+- Vista de modalidades y podio con nombres legibles de equipo y modalidad.
+- Refresco del podio sin hard reload en la vista publica del concurso.
 
 Pendiente:
 - Pulido UX y estados vacios/errores.
-- Estrategia de revalidacion por tags para cache publico.
+- Estrategia fina de cache solo para datos realmente estaticos.
 
 ---
 
@@ -136,9 +140,9 @@ Pendiente de fase:
 ---
 
 ## Fase 5 - Modulo ADMIN Winners
-Estado: PENDIENTE
+Estado: COMPLETADA EN MVP
 
-Pendiente:
+Alcance ejecutado:
 - Asignar ganador por modalidad y posicion.
 - Editar posicion de ganador.
 - Eliminar ganador.
@@ -146,6 +150,10 @@ Pendiente:
   - Una posicion unica por modalidad.
   - Maximo 3 ganadores por modalidad.
   - Team debe corresponder a modalidad.
+
+Pendiente:
+- Pulido de UX y estados vacios.
+- Validacion manual completa de bordes.
 
 ---
 
@@ -196,8 +204,8 @@ Teams:
 - STUDENT list my teams: Implementado en MVP.
 
 Winners:
-- Lectura publica basica: Parcial.
-- CRUD admin winners: Pendiente.
+- Lectura publica basica: Implementado.
+- CRUD admin winners: Implementado en MVP.
 
 History:
 - STUDENT history: Implementado en MVP.
@@ -227,9 +235,9 @@ Mitigacion aplicada: fallback con `/auth/me` + `/teams` y filtro por miembro.
 ## 7. Siguiente fase recomendada (sin abrir frentes nuevos)
 
 Prioridad inmediata:
-1. Completar Fase 5 (Winners ADMIN) de punta a punta.
-2. Cerrar pendientes menores de Fase 2/Fase 4 (editar/eliminar modalidad, UX de companero).
-3. Refinar Fase 6 (errores certificados + flujo ADMIN).
+1. Cerrar pendientes menores de Fase 2/Fase 4 (editar/eliminar modalidad, UX de companero).
+2. Refinar Fase 6 (errores certificados + flujo ADMIN).
+3. Revisar si algun dato realmente puede volver a cacharse sin reintroducir hard refresh.
 
 Prioridad posterior:
 1. OAuth Google real en reemplazo de fallback dev.
