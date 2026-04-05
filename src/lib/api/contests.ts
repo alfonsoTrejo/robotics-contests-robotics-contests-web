@@ -2,7 +2,7 @@ import { apiFetch } from "@/lib/api/client";
 import type { Contest } from "@/lib/types/domain";
 
 export async function listContests(
-  cache: RequestCache = "force-cache",
+  cache: RequestCache = "no-store",
 ): Promise<Contest[]> {
   return apiFetch<Contest[]>("/contests", {
     method: "GET",
@@ -12,7 +12,7 @@ export async function listContests(
 
 export async function getContestById(
   id: string,
-  cache: RequestCache = "force-cache",
+  cache: RequestCache = "no-store",
 ): Promise<Contest> {
   return apiFetch<Contest>(`/contests/${id}`, {
     method: "GET",

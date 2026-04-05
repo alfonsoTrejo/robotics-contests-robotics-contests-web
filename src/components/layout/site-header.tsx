@@ -43,6 +43,12 @@ export function SiteHeader({ role }: SiteHeaderProps) {
               >
                 Concursos
               </Link>
+              <Link
+                href="/admin/winners"
+                className="inline-flex h-7 items-center justify-center rounded-md px-3 text-[0.8rem] font-medium text-neutral-700 hover:bg-neutral-100"
+              >
+                Ganadores
+              </Link>
             </>
           )}
           {role === "STUDENT" && (

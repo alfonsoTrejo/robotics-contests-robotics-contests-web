@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getContestById } from "@/lib/api/contests";
 import { listModalitiesByContest } from "@/lib/api/modalities";
 import { listWinnersByContest } from "@/lib/api/winners";
+import { listTeamsByContest } from "@/lib/api/teams";
 
 type ContestDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -14,15 +15,18 @@ type ContestDetailPageProps = {
 export default async function ContestDetailPage({ params }: ContestDetailPageProps) {
   const { id } = await params;
 
-  const contest = await getContestById(id).catch(() => null);
+  const contest = await getContestById(id, "no-store").catch(() => null);
   if (!contest) {
     notFound();
   }
 
-  const [modalities, winners] = await Promise.all([
-    listModalitiesByContest(id).catch(() => []),
-    listWinnersByContest(id).catch(() => []),
+  const [modalities, winners, teams] = await Promise.all([
+    listModalitiesByContest(id, "no-store").catch(() => []),
+    listWinnersByContest(id, "no-store").catch(() => []),
+    listTeamsByContest(id, "no-store").catch(() => []),
   ]);
+
+  const teamById = new Map(teams.map((team) => [team.id, team.name]));
 
   return (
     <div className="min-h-screen bg-white">
@@ -62,7 +66,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
               {winners.length === 0 && <p>Aun no hay ganadores publicados.</p>}
               {winners.map((winner) => (
                 <p key={winner.id}>
-                  {winner.position} - Team {winner.teamId}
+                  {winner.position} - {teamById.get(winner.teamId) ?? `Team ${winner.teamId}`}
                 </p>
               ))}
             </CardContent>

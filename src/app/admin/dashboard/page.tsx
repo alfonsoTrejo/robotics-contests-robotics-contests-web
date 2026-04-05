@@ -60,9 +60,15 @@ export default async function AdminDashboardPage() {
               <CardTitle>Ganadores</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-neutral-600">
-                Asignación y edición de podio en próxima iteración.
+              <p className="mb-4 text-sm text-neutral-600">
+                Asigna, edita y elimina podios por modalidad.
               </p>
+              <Link
+                href="/admin/winners"
+                className="inline-flex h-8 items-center justify-center rounded-md border border-black/20 px-3 text-sm font-medium hover:bg-neutral-100"
+              >
+                Abrir modulo
+              </Link>
             </CardContent>
           </Card>
         </div>
