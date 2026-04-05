@@ -34,7 +34,6 @@ Completado en alto nivel:
 
 Pendiente en alto nivel:
 - OAuth Google real end-to-end (sin fallback dev).
-- Modulo WINNERS ADMIN completo.
 - Pulido de certificados y mensajes de error UX.
 - Hardening final (tests, checklist deploy, accesibilidad).
 
@@ -198,7 +197,7 @@ Contests:
 Modalities:
 - Public/by contest: Implementado.
 - ADMIN create: Implementado.
-- ADMIN update/delete: Pendiente UI.
+- ADMIN update/delete: Implementado.
 
 Teams:
 - STUDENT create team: Implementado en MVP.
@@ -236,7 +235,7 @@ Mitigacion aplicada: fallback con `/auth/me` + `/teams` y filtro por miembro.
 ## 7. Siguiente fase recomendada (sin abrir frentes nuevos)
 
 Prioridad inmediata:
-1. Cerrar pendientes menores de Fase 2/Fase 4 (editar/eliminar modalidad, UX de companero).
+1. Cerrar pendientes menores de Fase 4 (UX de companero y mensajes de error guiados).
 2. Refinar Fase 6 (errores certificados + flujo ADMIN).
 3. Revisar si algun dato realmente puede volver a cacharse sin reintroducir hard refresh.
 
