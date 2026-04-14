@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,10 @@ export function ModalityListManager({
     () => [...modalities].sort((a, b) => a.name.localeCompare(b.name)),
     [modalities],
   );
+
+  useEffect(() => {
+    setModalities(initialModalities);
+  }, [initialModalities]);
 
   function onStartEdit(modality: Modality) {
     setEditingId(modality.id);
