@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,40 @@ type SessionUser = {
   email: string;
 };
 
+function toFriendlyTeamError(rawMessage: string) {
+  const message = rawMessage.toLowerCase();
+
+  if (message.includes("team not found") || message.includes("no existe un estudiante")) {
+    return "No encontramos un estudiante con ese correo. Pídele que inicie sesión al menos una vez.";
+  }
+
+  if (message.includes("ese correo corresponde a tu propio usuario")) {
+    return "Ese correo es el tuyo; no necesitas agregarte como compañero.";
+  }
+
+  if (message.includes("requester must be a team member")) {
+    return "Tu usuario debe permanecer dentro del equipo.";
+  }
+
+  if (message.includes("cannot register teams when contest is not open")) {
+    return "Este concurso ya no está abierto para registrar equipos.";
+  }
+
+  if (message.includes("modality does not belong to the given contest")) {
+    return "La modalidad seleccionada no corresponde al concurso.";
+  }
+
+  if (message.includes("team must have 1 or 2 members")) {
+    return "Un equipo solo puede tener uno o dos integrantes.";
+  }
+
+  if (message.includes("unauthorized") || message.includes("forbidden")) {
+    return "Tu sesión expiró. Inicia sesión de nuevo para continuar.";
+  }
+
+  return rawMessage;
+}
+
 export function StudentDashboardClient() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -34,7 +69,7 @@ export function StudentDashboardClient() {
   const [teamName, setTeamName] = useState("");
   const [contestId, setContestId] = useState("");
   const [modalityId, setModalityId] = useState("");
-  const [teammateUserId, setTeammateUserId] = useState("");
+  const [teammateEmail, setTeammateEmail] = useState("");
 
   const openContests = useMemo(
     () => contests.filter((contest) => contest.status === "OPEN"),
@@ -163,30 +198,30 @@ export function StudentDashboardClient() {
     event.preventDefault();
 
     if (!user) {
-      setError("Sesion no valida");
+      const message = "Sesion no valida";
+      setError(message);
+      toast.error("Sesión inválida", {
+        description: "Inicia sesión nuevamente para crear un equipo.",
+      });
       return;
     }
 
     if (!teamName || !contestId || !modalityId) {
-      setError("Completa los campos obligatorios");
+      const message = "Completa los campos obligatorios";
+      setError(message);
+      toast.warning("Faltan datos", {
+        description: "Completa nombre, concurso y modalidad.",
+      });
       return;
     }
 
     const selectedContest = contestById.get(contestId);
     if (!selectedContest || selectedContest.status !== "OPEN") {
-      setError("Solo puedes crear equipos en concursos OPEN");
-      return;
-    }
-
-    const memberUserIds = [user.id];
-    const teammate = teammateUserId.trim();
-
-    if (teammate && teammate !== user.id) {
-      memberUserIds.push(teammate);
-    }
-
-    if (memberUserIds.length > 2) {
-      setError("Un equipo admite maximo 2 miembros");
+      const message = "Solo puedes crear equipos en concursos OPEN";
+      setError(message);
+      toast.warning("Concurso cerrado", {
+        description: "Selecciona un concurso en estado OPEN.",
+      });
       return;
     }
 
@@ -194,6 +229,32 @@ export function StudentDashboardClient() {
     setError(null);
 
     try {
+      const memberUserIds = [user.id];
+      const teammateEmailInput = teammateEmail.trim().toLowerCase();
+
+      if (teammateEmailInput) {
+        const lookupResponse = await fetch(
+          `/api/student/teams/by-email?email=${encodeURIComponent(teammateEmailInput)}`,
+          { cache: "no-store" },
+        );
+
+        const lookupPayload = (await lookupResponse.json()) as {
+          ok?: boolean;
+          data?: { id: string; email: string; name?: string };
+          error?: { message?: string };
+        };
+
+        if (!lookupResponse.ok || !lookupPayload.ok || !lookupPayload.data) {
+          throw new Error(lookupPayload.error?.message ?? "No se pudo validar el correo del compañero");
+        }
+
+        memberUserIds.push(lookupPayload.data.id);
+      }
+
+      if (memberUserIds.length > 2) {
+        throw new Error("Un equipo admite maximo 2 miembros");
+      }
+
       const response = await fetch("/api/student/teams", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -224,13 +285,20 @@ export function StudentDashboardClient() {
       setTeamName("");
       setContestId("");
       setModalityId("");
-      setTeammateUserId("");
+      setTeammateEmail("");
+      toast.success("Equipo creado", {
+        description: "Tu equipo se registró correctamente.",
+      });
     } catch (unknownError) {
       const message =
         unknownError instanceof Error
           ? unknownError.message
           : "Error inesperado al crear equipo";
-      setError(message);
+      const friendlyMessage = toFriendlyTeamError(message);
+      setError(friendlyMessage);
+      toast.error("No se pudo crear el equipo", {
+        description: friendlyMessage,
+      });
     } finally {
       setSubmitting(false);
     }
@@ -305,12 +373,13 @@ export function StudentDashboardClient() {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="teammate">ID de companero (opcional)</Label>
+              <Label htmlFor="teammate">Correo del companero (opcional)</Label>
               <Input
                 id="teammate"
-                value={teammateUserId}
-                onChange={(event) => setTeammateUserId(event.target.value)}
-                placeholder="uuid del segundo miembro"
+                type="email"
+                value={teammateEmail}
+                onChange={(event) => setTeammateEmail(event.target.value)}
+                placeholder="compa@universidad.edu"
               />
             </div>
 

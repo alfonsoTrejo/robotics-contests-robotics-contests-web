@@ -217,6 +217,32 @@ Role: Public
 List teams for current student.
 Role: STUDENT
 
+### GET /teams/by-email
+Resolve student user by email (for team creation UX).
+Role: STUDENT
+
+Query params: email
+
+Response 200:
+{
+  "ok": true,
+  "data": {
+    "id": "uuid",
+    "name": "Student Name",
+    "email": "student@rcms.com"
+  }
+}
+
+Validation rules:
+- Email is required
+- Only returns STUDENT users
+- Requester cannot resolve their own email as teammate
+
+Common errors:
+- 400: missing email or requester tried own email
+- 401/403: not authenticated or role not allowed
+- 404: student with that email was not found
+
 ### POST /teams
 Create team.
 Role: STUDENT

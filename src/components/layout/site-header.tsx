@@ -25,7 +25,7 @@ export function SiteHeader({ role }: SiteHeaderProps) {
                 href="/auth/student/callback"
                 className="inline-flex h-7 items-center justify-center rounded-md bg-neutral-900 px-3 text-[0.8rem] font-medium text-white hover:bg-neutral-800"
               >
-                Acceso estudiante
+                Estudiante (Google)
               </Link>
             </>
           )}

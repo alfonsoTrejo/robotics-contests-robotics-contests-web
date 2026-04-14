@@ -1,6 +1,6 @@
 # RCMS Frontend - Estado por fases y plan de continuidad
 
-Fecha de actualizacion: 2026-04-05
+Fecha de actualizacion: 2026-04-14
 
 ## 1. Contexto del proyecto
 Este frontend implementa el Sistema de Gestion de Torneos de Robotica Universitarios sobre el backend RCMS documentado en `docs/api.md`.
@@ -30,11 +30,13 @@ Completado en alto nivel:
 - Correcciones de cache para refresco inmediato en paneles y vistas publicas.
 - Lecturas compartidas criticas con `no-store` por defecto para evitar hard refresh.
 - Modulo ADMIN de Winners implementado.
-- Fallback de login dev para estudiantes fake (`fake-google-id-N`).
+- Login STUDENT con Google Identity Services en flujo real.
+- Creacion de equipos con companero por correo (sin capturar UUID manual).
+- Mensajes de error mas amigables en creacion de equipos (toast + texto contextual).
 
 Pendiente en alto nivel:
-- OAuth Google real end-to-end (sin fallback dev).
-- Pulido de certificados y mensajes de error UX.
+- Configuracion de credenciales OAuth Google por ambiente (Client ID, origins y dominios autorizados).
+- Pulido final de certificados y mensajes de error UX fuera del flujo de equipos.
 - Hardening final (tests, checklist deploy, accesibilidad).
 
 ---
@@ -56,11 +58,11 @@ Resultado:
 ---
 
 ## Fase 1 - Auth shell y control de acceso
-Estado: COMPLETADA EN MVP
+Estado: COMPLETADA EN MVP (Google OAuth integrado en frontend)
 
 Alcance ejecutado:
 - Login ADMIN via endpoint interno.
-- Callback STUDENT para exchange de token.
+- Login STUDENT con Google Identity Services + exchange de token en endpoint interno.
 - Logout con limpieza de cookies de sesion y rol.
 - `/api/auth/me` para validacion de sesion.
 - Middleware por rol + layouts protegidos server-side.
@@ -70,10 +72,10 @@ Correcciones relevantes aplicadas:
 - Manejo de cookie host-safe en frontend.
 - Expulsion a `/` con sesion invalida.
 - Bloqueo de reingreso por historial del navegador tras logout.
-- Fallback dev para login estudiante con `fake-google-id-N`.
+- Endpoint de exchange robusto con validacion estricta de `id_token`.
 
 Pendiente de fase:
-- OAuth Google real con UX final.
+- Ajuste de credenciales OAuth y dominios autorizados por ambiente (dev/staging/prod).
 
 ---
 
@@ -125,6 +127,7 @@ Alcance ejecutado:
   - Concurso OPEN.
   - Solicitante incluido automaticamente.
   - Maximo 2 miembros.
+- Alta de companero por correo con resolucion segura a `userId` en backend.
 - Listado de mis equipos.
 - Historial del estudiante.
 - Descarga de certificado via endpoint interno.
@@ -132,10 +135,10 @@ Alcance ejecutado:
 Correcciones relevantes aplicadas:
 - Endpoint interno de teams robusto ante backend con `404` en `/teams/my`.
 - Resolucion de nombre de modalidad en tabla de equipos (no UUID crudo).
+- Manejo de errores de creacion con mensajes amigables para estudiante.
 
 Pendiente de fase:
-- Mejor UX para seleccionar companero (actualmente por ID).
-- Mensajes de error mas guiados por reglas de negocio.
+- Sugerencias/autocompletado de correo para companero (opcional).
 
 ---
 
@@ -185,10 +188,10 @@ Pendiente:
 
 Auth:
 - ADMIN login: Implementado.
-- STUDENT login: Implementado en modo callback + fallback dev.
+- STUDENT login: Implementado con Google Identity Services + exchange en backend RCMS.
 - Logout: Implementado y reforzado.
 - Session check (`/auth/me`): Implementado.
-- OAuth Google real: Pendiente.
+- OAuth Google real: Implementado en frontend; pendiente configuracion de Client ID por ambiente.
 
 Contests:
 - Public list/detail: Implementado.
@@ -202,6 +205,7 @@ Modalities:
 Teams:
 - STUDENT create team: Implementado en MVP.
 - STUDENT list my teams: Implementado en MVP.
+- Lookup de companero por correo: Implementado.
 
 Winners:
 - Lectura publica basica: Implementado.
@@ -235,13 +239,13 @@ Mitigacion aplicada: fallback con `/auth/me` + `/teams` y filtro por miembro.
 ## 7. Siguiente fase recomendada (sin abrir frentes nuevos)
 
 Prioridad inmediata:
-1. Cerrar pendientes menores de Fase 4 (UX de companero y mensajes de error guiados).
-2. Refinar Fase 6 (errores certificados + flujo ADMIN).
-3. Revisar si algun dato realmente puede volver a cacharse sin reintroducir hard refresh.
+1. Refinar Fase 6 (errores certificados + flujo ADMIN).
+2. Revisar si algun dato realmente puede volver a cacharse sin reintroducir hard refresh.
+3. Definir si se agrega autocompletado de correo para companero.
 
 Prioridad posterior:
-1. OAuth Google real en reemplazo de fallback dev.
-2. Hardening final (tests y checklist de entrega).
+1. Hardening final (tests y checklist de entrega).
+2. Limpieza de helpers/endpoints dev-only antes de despliegue productivo.
 
 ---
 

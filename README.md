@@ -36,6 +36,7 @@ npm run dev
 
 - `NEXT_PUBLIC_API_BASE_URL`: URL base del backend (default: `http://localhost:8080/api`)
 - `NEXT_PUBLIC_AUTH_COOKIE_NAME`: cookie de sesion (default: `rcms_token`)
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: Client ID OAuth 2.0 de Google para login estudiante
 
 ## Rutas implementadas (iteracion 1)
 
@@ -58,11 +59,18 @@ Proxy auth en Next:
 - `/api/auth/google/exchange`
 - `/api/auth/logout`
 
+Proxy student en Next:
+- `/api/student/teams`
+- `/api/student/teams/by-email`
+- `/api/student/history`
+- `/api/student/certificates/winner/[winnerId]`
+
 ## Notas importantes
 
 - El bootstrap del primer ADMIN es fuera del frontend (segun definicion de alcance).
 - El callback de estudiante intercambia `id_token` por sesion RCMS usando el endpoint `/auth/google` del backend.
 - El middleware usa cookie de sesion + cookie de rol para proteger rutas por perfil.
+- La creacion de equipos en dashboard STUDENT permite capturar companero por correo (no por UUID manual).
 
 ## Documentacion
 

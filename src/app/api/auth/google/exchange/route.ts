@@ -5,24 +5,21 @@ import { API_BASE_URL, AUTH_COOKIE_NAME, AUTH_ROLE_COOKIE_NAME } from "@/lib/con
 import type { ApiResponse } from "@/lib/types/api";
 import type { User } from "@/lib/types/domain";
 
-function getFakeStudentEmailFromToken(idToken: string): string | null {
-  const match = idToken.match(/^fake-google-id-(\d+)$/);
-  const index = match?.[1];
+export async function POST(request: Request) {
+  const rawBody = (await request.json().catch(() => null)) as { id_token?: unknown } | null;
+  const idToken = typeof rawBody?.id_token === "string" ? rawBody.id_token.trim() : "";
 
-  if (!index) {
-    return null;
+  if (!idToken) {
+    return NextResponse.json(
+      { message: "Falta id_token valido" },
+      { status: 400 },
+    );
   }
 
-  return `student${index}@fake.test`;
-}
-
-export async function POST(request: Request) {
-  const body = (await request.json()) as { id_token: string };
-
-  let upstream = await fetch(`${API_BASE_URL}/auth/google`, {
+  const upstream = await fetch(`${API_BASE_URL}/auth/google`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ id_token: idToken }),
     credentials: "include",
     cache: "no-store",
   });
@@ -38,25 +35,10 @@ export async function POST(request: Request) {
       parsedErrorMessage = rawError;
     }
 
-    const fakeStudentEmail = getFakeStudentEmailFromToken(body.id_token);
-    const shouldTryDevFallback =
-      Boolean(fakeStudentEmail) &&
-      parsedErrorMessage.includes("Wrong number of segments in token");
-
-    if (shouldTryDevFallback && fakeStudentEmail) {
-      upstream = await fetch(`${API_BASE_URL}/dev/login-fake-student`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: fakeStudentEmail }),
-        credentials: "include",
-        cache: "no-store",
-      });
-    } else {
-      return NextResponse.json(
-        { message: parsedErrorMessage || "No se pudo iniciar sesión" },
-        { status: upstream.status || 400 },
-      );
-    }
+    return NextResponse.json(
+      { message: parsedErrorMessage || "No se pudo iniciar sesión" },
+      { status: upstream.status || 400 },
+    );
   }
 
   const payload = (await upstream.json()) as ApiResponse<User>;
