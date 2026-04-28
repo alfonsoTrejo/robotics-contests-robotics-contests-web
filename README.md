@@ -30,11 +30,11 @@ npm run dev
 
 4. Abre:
 
-`http://localhost:3000`
+`https://localhost:3000`
 
 ## Variables de entorno
 
-- `NEXT_PUBLIC_API_BASE_URL`: URL base del backend (default: `http://localhost:8080/api`)
+- `NEXT_PUBLIC_API_BASE_URL`: URL base del backend (default: `https://localhost:8080/api`)
 - `NEXT_PUBLIC_AUTH_COOKIE_NAME`: cookie de sesion (default: `rcms_token`)
 - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: Client ID OAuth 2.0 de Google para login estudiante
 

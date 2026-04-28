@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0 --port 3000",
-    "dev:local": "next dev --hostname localhost --port 3000",
+    "dev": "NODE_EXTRA_CA_CERTS=../certs/localhost-cert.pem node server.js",
+    "dev:local": "NODE_EXTRA_CA_CERTS=../certs/localhost-cert.pem node server.js",
     "build": "next build",
-    "start": "next start",
+    "start": "NODE_ENV=production NODE_EXTRA_CA_CERTS=../certs/localhost-cert.pem node server.js",
     "lint": "eslint"
   },
   "dependencies": {
